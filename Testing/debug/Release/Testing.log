@@ -1,0 +1,7 @@
+﻿  main.cpp
+src\main.cpp(7): warning C4101: 'v': unreferenced local variable
+  Generating code
+  All 1 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  Testing.vcxproj -> C:\Users\CaptainKirk\Desktop\NullX\Testing\build\Release\Testing.exe
+  Testing.vcxproj -> C:\Users\CaptainKirk\Desktop\NullX\Testing\build\Release\Testing.pdb (Full PDB)
