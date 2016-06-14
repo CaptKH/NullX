@@ -1,3 +1,9 @@
+/* ********************************** */
+/* NullX Accelerated C++ Math Library */
+/* Author: Kirk Hewitt                */
+/* Created: 6/12/2016                 */
+/* ********************************** */
+
 #include <NullX.h>
 #include <math.h>
 
@@ -27,10 +33,11 @@ namespace NullX
         y /= mag;
     }
 
-    Vector2 Vector2::Normalized(Vector2& vec)
+    Vector2 Vector2::Normalized(const Vector2& vec)
     {
-        vec.Normalize();
-        return vec;
+        Vector2 toReturn = Vector2(vec);
+        toReturn.Normalize();
+        return toReturn;
     }
 
     float Vector2::Magnitude(const Vector2& vec)
