@@ -1,3 +1,5 @@
 ﻿  main.cpp
+LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/PROFILE' specification
+NullX.lib(Matrix4.obj) : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/OPT:LBR' specification
   Testing.vcxproj -> C:\Users\CaptainKirk\Desktop\NullX\Testing\build\x64\Debug\Testing.exe
   Testing.vcxproj -> C:\Users\CaptainKirk\Desktop\NullX\Testing\build\x64\Debug\Testing.pdb (Partial PDB)

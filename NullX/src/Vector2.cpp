@@ -9,10 +9,10 @@
 
 namespace NullX
 {
-    Vector2 Vector2::up = Vector2(0.0f, 1.0f);
-    Vector2 Vector2::down = Vector2(0.0f, -1.0f);
-    Vector2 Vector2::left = Vector2(-1.0f, 0.0f);
-    Vector2 Vector2::right = Vector2(1.0f, 0.0f);
+    Vector2 Vector2::Up = Vector2(0.0f, 1.0f);
+    Vector2 Vector2::Down = Vector2(0.0f, -1.0f);
+    Vector2 Vector2::Left = Vector2(-1.0f, 0.0f);
+    Vector2 Vector2::Right = Vector2(1.0f, 0.0f);
 
     Vector2::Vector2() : x(0.0f), y(0.0f)
     {
@@ -83,6 +83,11 @@ namespace NullX
     bool Vector2::operator != (const Vector2& vec)
     {
         return (x != vec.x) ? (y != vec.y) ? true : false : false;
+    }
+
+    float Vector2::operator [] (const int num)
+    {
+        return elements[num];
     }
 
     Vector2 Vector2::operator + (const Vector2& vec)

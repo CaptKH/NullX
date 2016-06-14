@@ -103,6 +103,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -110,6 +111,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -142,6 +144,8 @@
     <ClInclude Include="include\NullX.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Core.cpp" />
+    <ClCompile Include="src\Matrix4.cpp" />
     <ClCompile Include="src\Vector2.cpp" />
     <ClCompile Include="src\Vector3.cpp" />
     <ClCompile Include="src\Vector4.cpp" />

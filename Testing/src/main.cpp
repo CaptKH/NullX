@@ -10,9 +10,18 @@ using namespace NullX;
 
 int main()
 {
-    Vector4 v1 = Vector4(1, 1, 1, 1);
-    Vector4 v2 = Vector4::Normalized(v1);
-    bool f = v1 == v2;
+    Matrix4 mat = Matrix4::Identity;
+
+    Vector4 vec = Matrix4::Rotate(HalfPi, 0, HalfPi) * Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+
+    Matrix4 mat2 = mat * 5;
+    Matrix4 mat3 = mat / 2;
+
+    Matrix4 mat4 = mat2 * mat3;
+
+    mat3 *= 2;
+
+    bool t = mat == mat2;
 
     return 0;
 }

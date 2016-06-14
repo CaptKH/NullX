@@ -1,2 +1,7 @@
-﻿  Vector2.cpp
+﻿  Vector4.cpp
+  Vector3.cpp
+  Vector2.cpp
+  Matrix4.cpp
+  Core.cpp
+  Generating Code...
   NullX.vcxproj -> C:\Users\CaptainKirk\Desktop\NullX\NullX\build\Debug\NullX.lib

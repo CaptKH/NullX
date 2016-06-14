@@ -9,12 +9,12 @@
 
 namespace NullX
 {
-    Vector3 Vector3::up = Vector3(0.0f, 1.0f, 0.0f);
-    Vector3 Vector3::down = Vector3(0.0f, -1.0f, 0.0f);
-    Vector3 Vector3::left = Vector3(-1.0f, 0.0f, 0.0f);
-    Vector3 Vector3::right = Vector3(1.0f, 0.0f, 0.0f);
-    Vector3 Vector3::forward = Vector3(0.0f, 0.0f, 1.0f);
-    Vector3 Vector3::backward = Vector3(0.0f, 0.0f, -1.0f);
+    Vector3 Vector3::Up = Vector3(0.0f, 1.0f, 0.0f);
+    Vector3 Vector3::Down = Vector3(0.0f, -1.0f, 0.0f);
+    Vector3 Vector3::Left = Vector3(-1.0f, 0.0f, 0.0f);
+    Vector3 Vector3::Right = Vector3(1.0f, 0.0f, 0.0f);
+    Vector3 Vector3::Forward = Vector3(0.0f, 0.0f, 1.0f);
+    Vector3 Vector3::Backward = Vector3(0.0f, 0.0f, -1.0f);
 
     Vector3::Vector3() : x(0.0f), y(0.0f), z(0.0f)
     {
@@ -91,6 +91,11 @@ namespace NullX
     bool Vector3::operator != (const Vector3& vec)
     {
         return (x != vec.x) ? (y != vec.y) ? (z != vec.z)? true : false : false : false;
+    }
+
+    float Vector3::operator [] (const int num)
+    {
+        return elements[num];
     }
 
     Vector3 Vector3::operator + (const Vector3& vec)

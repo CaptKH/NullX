@@ -1,2 +1,5 @@
-﻿  Testing.vcxproj -> C:\Users\CaptainKirk\Desktop\NullX\Testing\build\Debug\Testing.exe
+﻿  main.cpp
+LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/PROFILE' specification
+main.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/OPT:LBR' specification
+  Testing.vcxproj -> C:\Users\CaptainKirk\Desktop\NullX\Testing\build\Debug\Testing.exe
   Testing.vcxproj -> C:\Users\CaptainKirk\Desktop\NullX\Testing\build\Debug\Testing.pdb (Partial PDB)

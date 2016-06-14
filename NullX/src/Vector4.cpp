@@ -9,12 +9,12 @@
 
 namespace NullX
 {
-    Vector4 Vector4::up = Vector4(0.0f, 1.0f, 0.0f, 0.0f);
-    Vector4 Vector4::down = Vector4(0.0f, -1.0f, 0.0f, 0.0f);
-    Vector4 Vector4::left = Vector4(-1.0f, 0.0f, 0.0f, 0.0f);
-    Vector4 Vector4::right = Vector4(1.0f, 0.0f, 0.0f, 0.0f);
-    Vector4 Vector4::forward = Vector4(0.0f, 0.0f, 1.0f, 0.0f);
-    Vector4 Vector4::backward = Vector4(0.0f, 0.0f, -1.0f, 0.0f);
+    Vector4 Vector4::Up = Vector4(0.0f, 1.0f, 0.0f, 0.0f);
+    Vector4 Vector4::Down = Vector4(0.0f, -1.0f, 0.0f, 0.0f);
+    Vector4 Vector4::Left = Vector4(-1.0f, 0.0f, 0.0f, 0.0f);
+    Vector4 Vector4::Right = Vector4(1.0f, 0.0f, 0.0f, 0.0f);
+    Vector4 Vector4::Forward = Vector4(0.0f, 0.0f, 1.0f, 0.0f);
+    Vector4 Vector4::Backward = Vector4(0.0f, 0.0f, -1.0f, 0.0f);
 
     Vector4::Vector4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f)
     {
@@ -91,6 +91,11 @@ namespace NullX
     bool Vector4::operator != (const Vector4& vec)
     {
         return (x != vec.x) ? (y != vec.y) ? (z != vec.z) ? true : false : false : false;
+    }
+
+    float& Vector4::operator [] (const int num)
+    {
+        return elements[num];
     }
 
     Vector4 Vector4::operator + (const Vector4& vec)
