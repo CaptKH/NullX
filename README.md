@@ -12,13 +12,17 @@ potency of the library.
 - Implement the magic of Quaternions
 - Document existing code (function headers)
 
-## Phase 3 - SIMD Vectors
+## Phase 3 - Testing #1
+- Fully test existing codebase
+
+## Phase 4 - SIMD Vectors
 - Implement intrinsics for Vector2, Vector3 & Vector4 classes
 - Basic documentation of new SIMD functionality
 
-## Phase 4 - SIMD Matrices
+## Phase 5 - SIMD Matrices
 - Implement intrinsics for Matrix4x4
 - Basic documentation of new SIMD functionality
 
-## Phase 5 - Final Documentation
+## Phase 6 - Final Documentation & Testing #2
 - Finalize all documentation of SIMD functionality
+- Fully test newly added SIMD functionality
