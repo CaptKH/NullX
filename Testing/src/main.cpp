@@ -10,18 +10,12 @@ using namespace NullX;
 
 int main()
 {
-    Matrix4 mat = Matrix4::Identity;
+    Matrix4 mat = Matrix4(1, 4, 2, 3,
+        4, 2, 1, 0,
+        0, 6, 7, 1,
+        2, 2, 1, 4);
 
-    Vector4 vec = Matrix4::Rotate(HalfPi, 0, HalfPi) * Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-
-    Matrix4 mat2 = mat * 5;
-    Matrix4 mat3 = mat / 2;
-
-    Matrix4 mat4 = mat2 * mat3;
-
-    mat3 *= 2;
-
-    bool t = mat == mat2;
+    float det = Matrix4::Determinant(mat);
 
     return 0;
 }

@@ -5,7 +5,6 @@
 /* ********************************** */
 
 #include <NullX.h>
-#include <math.h>
 
 namespace NullX
 {
@@ -81,6 +80,16 @@ namespace NullX
     Vector3 Vector3::Cross(const Vector3& vec1, const Vector3& vec2)
     {
         return Vector3((vec1.y * vec2.z) - (vec1.z * vec2.y), (vec1.z * vec2.x) - (vec1.x * vec2.z), (vec1.x * vec2.y) - (vec1.y * vec2.x));
+    }
+
+    Vector2 Vector3::ToVector2(const Vector3& vec)
+    {
+        return Vector2(vec.x, vec.y);
+    }
+
+    Vector4 Vector3::ToVector4(const Vector3& vec, const float w)
+    {
+        return Vector4(vec.x, vec.y, vec.z, w);
     }
 
     bool Vector3::operator == (const Vector3& vec)

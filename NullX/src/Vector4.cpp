@@ -5,7 +5,6 @@
 /* ********************************** */
 
 #include <NullX.h>
-#include <math.h>
 
 namespace NullX
 {
@@ -76,6 +75,16 @@ namespace NullX
     Vector4 Vector4::Projection(Vector4& vec1, Vector4& vec2)
     {
         return vec2 * (Dot(vec1, vec2) / Magnitude(vec2));
+    }
+    
+    Vector2 Vector4::ToVector2(const Vector4& vec)
+    {
+        return Vector2(vec.x, vec.y);
+    }
+
+    Vector3 Vector4::ToVector3(const Vector4& vec)
+    {
+        return Vector3(vec.x, vec.y, vec.z);
     }
 
     Vector4 Vector4::Cross(const Vector4& vec1, const Vector4& vec2)

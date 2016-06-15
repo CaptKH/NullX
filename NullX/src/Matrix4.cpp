@@ -5,7 +5,6 @@
 /* ********************************** */
 
 #include <NullX.h>
-#include <math.h>
 #include <memory>
 
 namespace NullX
@@ -46,9 +45,11 @@ namespace NullX
                        mat.xw, mat.yw, mat.zw, mat.ww);
     }
 
-    float Matrix4::Determinant(const Matrix4& mat)
+    float Matrix4::Determinant(Matrix4& mat)
     {
-        return 0.0f;
+        std::vector<Matrix4> decomp = LUDecomposition(mat);
+        return((decomp[0].xx * decomp[0].yy * decomp[0].zz * decomp[0].ww) *
+               (decomp[1].xx * decomp[1].yy * decomp[1].zz * decomp[1].ww));
     }
 
     Matrix4 Matrix4::Translate(const float x, const float y, const float z)
@@ -101,9 +102,70 @@ namespace NullX
                        0.0f, 0.0f, 0.0f, 1.0f);
     }
 
-    Matrix4* Matrix4::LUDecomposition(const Matrix4& mat)
+    Matrix4 Matrix4::Scale(const float num)
     {
-        return new Matrix4();
+        return Matrix4(num, 0.0f, 0.0f, 0.0f,
+                       0.0f, num, 0.0f, 0.0f,
+                       0.0f, 0.0f, num, 0.0f,
+                       0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    Matrix4 Matrix4::Scale(const float x, const float y, const float z)
+    {
+        return Matrix4(x, 0.0f, 0.0f, 0.0f,
+                       0.0f, y, 0.0f, 0.0f,
+                       0.0f, 0.0f, z, 0.0f,
+                       0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    Matrix4 Matrix4::Scale(const Vector3& vec)
+    {
+        return Matrix4(vec.x, 0.0f, 0.0f, 0.0f,
+                       0.0f, vec.y, 0.0f, 0.0f,
+                       0.0f, 0.0f, vec.z, 0.0f,
+                       0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    std::vector<Matrix4> Matrix4::LUDecomposition(Matrix4& mat)
+    {
+        Matrix4 lower = Matrix4::Identity;
+        Matrix4 upper = Matrix4();
+        upper.rows[0] = mat.rows[0];
+        float value = 0.0f;
+
+        for (int i = 0; i < 3; i++)
+        {
+            // Lower
+            for (int j = i + 1; j < 4; j++)
+            {
+                value = mat[j][i];
+                
+                for (int k = 0; k < i; k++)
+                {
+                    value -= lower[j][k] * upper[k][i];
+                }
+
+                lower[j][i] = value / upper[i][i];
+            }
+
+            // Upper
+            for (int j = 1; j <= i + 1; j++)
+            {
+                value = mat[j][i + 1];
+
+                for (int k = 0; k < j; k++)
+                {
+                    value -= lower[j][k] * upper[k][i + 1];
+                }
+
+                upper[j][i + 1] = value;
+            }
+        }
+
+        std::vector<Matrix4> toReturn = std::vector<Matrix4>();
+        toReturn.push_back(lower);
+        toReturn.push_back(upper);
+        return toReturn;
     }
 
     bool Matrix4::operator == (Matrix4& mat)
@@ -163,7 +225,7 @@ namespace NullX
         return Matrix4(xx + mat.xx, xy + mat.xy, xz + mat.xz, xw + mat.xw,
                        yx + mat.yx, yy + mat.yy, yz + mat.yz, yw + mat.yw,
                        zx + mat.zx, zy + mat.zy, zz + mat.zz, zw + mat.zw,
-                       wx + mat.wx, wy + mat.wy, wz + mat.wz, ww + mat.ww);
+                       wx + mat.wx, wy + mat.wy, wz + mat.wz, 1.0f);
     }
 
     Matrix4 Matrix4::operator - (const Matrix4& mat)
@@ -171,7 +233,7 @@ namespace NullX
         return Matrix4(xx - mat.xx, xy - mat.xy, xz - mat.xz, xw - mat.xw,
                        yx - mat.yx, yy - mat.yy, yz - mat.yz, yw - mat.yw,
                        zx - mat.zx, zy - mat.zy, zz - mat.zz, zw - mat.zw,
-                       wx - mat.wx, wy - mat.wy, wz - mat.wz, ww - mat.ww);
+                       wx - mat.wx, wy - mat.wy, wz - mat.wz, 1.0f);
     }
 
     Matrix4 Matrix4::operator * (Matrix4& mat)
@@ -184,12 +246,10 @@ namespace NullX
             {
                 for (int k = 0; k < 4; k++)
                 {
-                    toReturn[i][j] += matrix[k][j] * mat[i][k];
+                    toReturn[j][i] += matrix[j][k] * mat[k][i];
                 }
             }
         }
-
-        toReturn[3][3] = 1.0f;
 
         return toReturn;
     }
@@ -199,7 +259,7 @@ namespace NullX
         return Matrix4(xx * num, xy * num, xz * num, xw * num,
                        yx * num, yy * num, yz * num, yw * num,
                        zx * num, zy * num, zz * num, zw * num,
-                       wx * num, wy * num, wz * num, ww * num);
+                       wx * num, wy * num, wz * num, 1.0f);
     }
 
     Matrix4 Matrix4::operator / (const float num)
@@ -207,7 +267,7 @@ namespace NullX
         return Matrix4(xx / num, xy / num, xz / num, xw / num,
                        yx / num, yy / num, yz / num, yw / num,
                        zx / num, zy / num, zz / num, zw / num,
-                       wx / num, wy / num, wz / num, ww / num);
+                       wx / num, wy / num, wz / num, 1.0f);
     }
 
     Matrix4 Matrix4::operator += (const Matrix4& mat)

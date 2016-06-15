@@ -6,6 +6,9 @@
 
 #pragma once
 
+#include <math.h>
+#include <vector>
+
 namespace NullX
 {
     constexpr float e         = 2.71828182f;
@@ -13,6 +16,12 @@ namespace NullX
     constexpr float HalfPi    = Pi / 2.0f;
     constexpr float ThirdPi   = Pi / 3.0f;
     constexpr float QuarterPi = Pi / 4.0f;
+
+    // Forward Declarations
+    class Vector2;
+    class Vector3;
+    class Vector4;
+    class Matrix4;
 
     class Vector2
     {
@@ -52,6 +61,8 @@ namespace NullX
         static float Distance(Vector2& vec1, Vector2& vec2);
         static Vector2 Clamp(Vector2& vec, const float mag);
         static Vector2 Projection(Vector2& vec1, Vector2& vec2);
+        static Vector3 ToVector3(const Vector2& vec);
+        static Vector4 ToVector4(const Vector2& vec, const float w);
 
         // Operator Overloads
         bool operator == (const Vector2& vec);
@@ -109,6 +120,8 @@ namespace NullX
         static Vector3 Clamp(Vector3& vec, const float mag);
         static Vector3 Projection(Vector3& vec1, Vector3& vec2);
         static Vector3 Cross(const Vector3& vec1, const Vector3& vec2);
+        static Vector2 ToVector2(const Vector3& vec);
+        static Vector4 ToVector4(const Vector3& vec, const float w);
 
         // Operator Overloads
         bool operator == (const Vector3& vec);
@@ -167,6 +180,8 @@ namespace NullX
         static Vector4 Clamp(Vector4& vec, const float mag);
         static Vector4 Projection(Vector4& vec1, Vector4& vec2);
         static Vector4 Cross(const Vector4& vec1, const Vector4& vec2);
+        static Vector2 ToVector2(const Vector4& vec);
+        static Vector3 ToVector3(const Vector4& vec);
 
         // Operator Overloads
         bool operator == (const Vector4& vec);
@@ -194,6 +209,10 @@ namespace NullX
                 float zx, zy, zz, zw;
                 float wx, wy, wz, ww;
             };
+            
+            struct {
+                Vector4 rows[4];
+            };
 
             float matrix[4][4];
         };
@@ -214,7 +233,7 @@ namespace NullX
         // Static Functions
         static Matrix4 Inverse(const Matrix4& mat);
         static Matrix4 Transpose(const Matrix4& mat);
-        static float Determinant(const Matrix4& mat);
+        static float Determinant(Matrix4& mat);
 
         // Transformations
         static Matrix4 Translate(const float x, const float y, const float z);
@@ -224,9 +243,12 @@ namespace NullX
         static Matrix4 RotateX(const float deg);
         static Matrix4 RotateY(const float deg);
         static Matrix4 RotateZ(const float deg);
+        static Matrix4 Scale(const float num);
+        static Matrix4 Scale(const float x, const float y, const float z);
+        static Matrix4 Scale(const Vector3& vec);
 
         // Decompositions 
-        static Matrix4* LUDecomposition(const Matrix4& mat);
+        static std::vector<Matrix4> LUDecomposition(Matrix4& mat);
 
         // Operator Overloads
         bool operator == (Matrix4& mat);
