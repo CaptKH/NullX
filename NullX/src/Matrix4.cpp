@@ -32,9 +32,48 @@ namespace NullX
         memcpy(matrix, mat.matrix, sizeof(Matrix4));
     }
 
-    Matrix4 Matrix4::Inverse(const Matrix4& mat)
+    Matrix4 Matrix4::Inverse(Matrix4& mat)
     {
-        return Matrix4();
+        std::vector<Matrix4> decomp = Matrix4::LUDecomposition(mat);
+        Matrix4 lower = decomp[0];
+        Matrix4 upper = decomp[1];
+        Matrix4 toReturn = Matrix4();
+        Matrix4 fSub = Matrix4();
+        float value = 0.0f;
+
+        // Forward substitution
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                value = Matrix4::Identity[j][i];
+
+                for (int k = 0; k < j; k++)
+                {
+                    value -= fSub[k][i] * lower[j][k];
+                }
+
+                fSub[j][i] = value / lower[j][j];
+            }
+        }
+        
+        // Backward substitution
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 3; j >= 0; j--)
+            {
+                value = fSub[j][i];
+
+                for (int k = 3; k > j; k--)
+                {
+                    value -= toReturn[k][i] * upper[j][k];
+                }
+
+                toReturn[j][i] = value / upper[j][j];
+            }
+        } 
+
+        return toReturn;
     }
 
     Matrix4 Matrix4::Transpose(const Matrix4& mat)

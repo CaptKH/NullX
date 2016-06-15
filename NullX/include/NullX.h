@@ -231,7 +231,7 @@ namespace NullX
         static Matrix4 Identity;
 
         // Static Functions
-        static Matrix4 Inverse(const Matrix4& mat);
+        static Matrix4 Inverse(Matrix4& mat);
         static Matrix4 Transpose(const Matrix4& mat);
         static float Determinant(Matrix4& mat);
 

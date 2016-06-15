@@ -1,4 +1,6 @@
 ﻿  main.cpp
+c:\users\captainkirk\desktop\nullx\testing\src\main.cpp(15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\captainkirk\desktop\nullx\testing\src\main.cpp(23): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
 LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/PROFILE' specification
 main.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/OPT:LBR' specification
   Testing.vcxproj -> C:\Users\CaptainKirk\Desktop\NullX\Testing\build\Debug\Testing.exe
