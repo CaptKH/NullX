@@ -3,5 +3,6 @@
   Vector2.cpp
   Matrix4.cpp
   Core.cpp
+c:\users\captainkirk\desktop\nullx\nullx\src\core.cpp(50): warning C4244: 'return': conversion from 'int' to 'float', possible loss of data
   Generating Code...
   NullX.vcxproj -> C:\Users\CaptainKirk\Desktop\NullX\NullX\build\Debug\NullX.lib

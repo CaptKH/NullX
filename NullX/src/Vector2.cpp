@@ -8,10 +8,10 @@
 
 namespace NullX
 {
-    Vector2 Vector2::Up = Vector2(0.0f, 1.0f);
-    Vector2 Vector2::Down = Vector2(0.0f, -1.0f);
-    Vector2 Vector2::Left = Vector2(-1.0f, 0.0f);
-    Vector2 Vector2::Right = Vector2(1.0f, 0.0f);
+    Vector2 Vector2::Up    = Vector2( 0.0f,  1.0f);
+    Vector2 Vector2::Down  = Vector2( 0.0f, -1.0f);
+    Vector2 Vector2::Left  = Vector2(-1.0f,  0.0f);
+    Vector2 Vector2::Right = Vector2( 1.0f,  0.0f);
 
     Vector2::Vector2() : x(0.0f), y(0.0f)
     {
@@ -25,18 +25,19 @@ namespace NullX
     {
     }
 
+    Vector2::Vector2(const Vector3& vec) : x(vec.x), y(vec.y)
+    {
+    }
+
+    Vector2::Vector2(const Vector4& vec) : x(vec.x), y(vec.y)
+    {
+    }
+
     void Vector2::Normalize()
     {
         float mag = Magnitude(*this);
         x /= mag;
         y /= mag;
-    }
-
-    Vector2 Vector2::Normalized(const Vector2& vec)
-    {
-        Vector2 toReturn = Vector2(vec);
-        toReturn.Normalize();
-        return toReturn;
     }
 
     float Vector2::Magnitude(const Vector2& vec)
@@ -62,6 +63,13 @@ namespace NullX
     float Vector2::Distance(Vector2& vec1, Vector2& vec2)
     {
         return Magnitude(vec1 - vec2);
+    }
+
+    Vector2 Vector2::Normalized(const Vector2& vec)
+    {
+        Vector2 toReturn = Vector2(vec);
+        toReturn.Normalize();
+        return toReturn;
     }
 
     Vector2 Vector2::Clamp(Vector2& vec, const float mag)

@@ -165,6 +165,77 @@ namespace NullX
                        0.0f, 0.0f, 0.0f, 1.0f);
     }
 
+    Matrix4 Matrix4::InvTranslate(const float x, const float y, const float z)
+    {
+        return Matrix4(1.0f, 0.0f, 0.0f, -x,
+                       0.0f, 1.0f, 0.0f, -y,
+                       0.0f, 0.0f, 1.0f, -z,
+                       0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    Matrix4 Matrix4::InvTranslate(const Vector3& vec)
+    {
+        return Matrix4(1.0f, 0.0f, 0.0f, -vec.x,
+                       0.0f, 1.0f, 0.0f, -vec.y,
+                       0.0f, 0.0f, 1.0f, -vec.z,
+                       0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    Matrix4 Matrix4::InvTranslate(const Matrix4& mat)
+    {
+        return Matrix4(1.0f, 0.0f, 0.0f, -mat.xw,
+            0.0f, 1.0f, 0.0f, -mat.yw,
+            0.0f, 0.0f, 1.0f, -mat.zw,
+            0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    Matrix4 Matrix4::InvRotate(const float roll, const float pitch, const float yaw)
+    {
+        return Matrix4::Transpose(Rotate(roll, pitch, yaw));
+    }
+
+    Matrix4 Matrix4::InvRotate(const Vector3& vec)
+    {
+        return Matrix4::Transpose(Rotate(vec));
+    }
+    
+    Matrix4 Matrix4::InvRotate(const Matrix4& mat)
+    {
+        return Matrix4::Transpose(mat);
+    }
+
+    Matrix4 Matrix4::InvScale(const float num)
+    {
+        return Matrix4(1 / num, 0.0f, 0.0f, 0.0f,
+                       0.0f, 1 / num, 0.0f, 0.0f,
+                       0.0f, 0.0f, 1 / num, 0.0f,
+                       0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    Matrix4 Matrix4::InvScale(const float x, const float y, const float z)
+    {
+        return Matrix4(1 / x, 0.0f, 0.0f, 0.0f,
+                       0.0f, 1 / y, 0.0f, 0.0f,
+                       0.0f, 0.0f, 1 / z, 0.0f,
+                       0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    Matrix4 Matrix4::InvScale(const Vector3& vec)
+    {
+        return Matrix4(1 / vec.x, 0.0f, 0.0f, 0.0f,
+                       0.0f, 1 / vec.y, 0.0f, 0.0f,
+                       0.0f, 0.0f, 1 / vec.z, 0.0f,
+                       0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    Matrix4 Matrix4::InvScale(const Matrix4& mat)
+    {
+        return Matrix4(1 / mat.xx, 0.0f, 0.0f, 0.0f,
+                       0.0f, 1 / mat.yy, 0.0f, 0.0f,
+                       0.0f, 0.0f, 1 / mat.zz, 0.0f,
+                       0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
     std::vector<Matrix4> Matrix4::LUDecomposition(Matrix4& mat)
     {
         Matrix4 lower = Matrix4::Identity;

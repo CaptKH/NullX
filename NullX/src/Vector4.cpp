@@ -8,18 +8,26 @@
 
 namespace NullX
 {
-    Vector4 Vector4::Up = Vector4(0.0f, 1.0f, 0.0f, 0.0f);
-    Vector4 Vector4::Down = Vector4(0.0f, -1.0f, 0.0f, 0.0f);
-    Vector4 Vector4::Left = Vector4(-1.0f, 0.0f, 0.0f, 0.0f);
-    Vector4 Vector4::Right = Vector4(1.0f, 0.0f, 0.0f, 0.0f);
-    Vector4 Vector4::Forward = Vector4(0.0f, 0.0f, 1.0f, 0.0f);
-    Vector4 Vector4::Backward = Vector4(0.0f, 0.0f, -1.0f, 0.0f);
+    Vector4 Vector4::Up       = Vector4( 0.0f,  1.0f,  0.0f, 0.0f);
+    Vector4 Vector4::Down     = Vector4( 0.0f, -1.0f,  0.0f, 0.0f);
+    Vector4 Vector4::Left     = Vector4(-1.0f,  0.0f,  0.0f, 0.0f);
+    Vector4 Vector4::Right    = Vector4( 1.0f,  0.0f,  0.0f, 0.0f);
+    Vector4 Vector4::Forward  = Vector4( 0.0f,  0.0f,  1.0f, 0.0f);
+    Vector4 Vector4::Backward = Vector4( 0.0f,  0.0f, -1.0f, 0.0f);
 
     Vector4::Vector4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f)
     {
     }
 
     Vector4::Vector4(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w)
+    {
+    }
+
+    Vector4::Vector4(const Vector2& vec, const float _w) : x(vec.x), y(vec.y), z(0.0f), w(_w)
+    {
+    }
+
+    Vector4::Vector4(const Vector3& vec, const float _w) : x(vec.x), y(vec.y), z(vec.z), w(_w)
     {
     }
 
@@ -33,13 +41,6 @@ namespace NullX
         x /= mag;
         y /= mag;
         z /= mag;
-    }
-
-    Vector4 Vector4::Normalized(const Vector4& vec)
-    {
-        Vector4 toReturn = Vector4(vec);
-        toReturn.Normalize();
-        return toReturn;
     }
 
     float Vector4::Magnitude(const Vector4& vec)
@@ -65,6 +66,13 @@ namespace NullX
     float Vector4::Distance(Vector4& vec1, Vector4& vec2)
     {
         return Magnitude(vec1 - vec2);
+    }
+
+    Vector4 Vector4::Normalized(const Vector4& vec)
+    {
+        Vector4 toReturn = Vector4(vec);
+        toReturn.Normalize();
+        return toReturn;
     }
 
     Vector4 Vector4::Clamp(Vector4& vec, const float mag)

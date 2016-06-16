@@ -8,12 +8,12 @@
 
 namespace NullX
 {
-    Vector3 Vector3::Up = Vector3(0.0f, 1.0f, 0.0f);
-    Vector3 Vector3::Down = Vector3(0.0f, -1.0f, 0.0f);
-    Vector3 Vector3::Left = Vector3(-1.0f, 0.0f, 0.0f);
-    Vector3 Vector3::Right = Vector3(1.0f, 0.0f, 0.0f);
-    Vector3 Vector3::Forward = Vector3(0.0f, 0.0f, 1.0f);
-    Vector3 Vector3::Backward = Vector3(0.0f, 0.0f, -1.0f);
+    Vector3 Vector3::Up       = Vector3( 0.0f,  1.0f,  0.0f);
+    Vector3 Vector3::Down     = Vector3( 0.0f, -1.0f,  0.0f);
+    Vector3 Vector3::Left     = Vector3(-1.0f,  0.0f,  0.0f);
+    Vector3 Vector3::Right    = Vector3( 1.0f,  0.0f,  0.0f);
+    Vector3 Vector3::Forward  = Vector3( 0.0f,  0.0f,  1.0f);
+    Vector3 Vector3::Backward = Vector3( 0.0f,  0.0f, -1.0f);
 
     Vector3::Vector3() : x(0.0f), y(0.0f), z(0.0f)
     {
@@ -23,7 +23,15 @@ namespace NullX
     {
     }
 
+    Vector3::Vector3(const Vector2& vec) : x(vec.x), y(vec.y), z(0.0f)
+    {
+    }
+
     Vector3::Vector3(const Vector3& vec) : x(vec.x), y(vec.y), z(vec.z)
+    {
+    }
+
+    Vector3::Vector3(const Vector4& vec) : x(vec.x), y(vec.y), z(vec.z)
     {
     }
 
@@ -33,13 +41,6 @@ namespace NullX
         x /= mag;
         y /= mag;
         z /= mag;
-    }
-
-    Vector3 Vector3::Normalized(const Vector3& vec)
-    {
-        Vector3 toReturn = Vector3(vec);
-        toReturn.Normalize();
-        return toReturn;
     }
 
     float Vector3::Magnitude(const Vector3& vec)
@@ -65,6 +66,13 @@ namespace NullX
     float Vector3::Distance(Vector3& vec1, Vector3& vec2)
     {
         return Magnitude(vec1 - vec2);
+    }
+
+    Vector3 Vector3::Normalized(const Vector3& vec)
+    {
+        Vector3 toReturn = Vector3(vec);
+        toReturn.Normalize();
+        return toReturn;
     }
 
     Vector3 Vector3::Clamp(Vector3& vec, const float mag)
