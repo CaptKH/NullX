@@ -4,7 +4,7 @@ The aim for the library is to provide a simple guide to SIMD optimization, while
 CPU's hardware. Development will be done in phases, with each phase bringing major improvements to the speed and 
 potency of the library.
 
-## Phase 1 - Initial Architecture
+## Phase 1 - Initial Architecture (Complete 6/15/16)
 - Functionality for Vector2, Vector3, Vector4 & Matrix4x4
 - Commonly used functions (Clamp, Floor, Ceiling, etc.)
 
