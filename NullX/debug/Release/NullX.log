@@ -1,2 +1,8 @@
-﻿  Vector2.cpp
+﻿  Core.cpp
+src\Core.cpp(50): warning C4244: 'return': conversion from 'int' to 'float', possible loss of data
+  Matrix4.cpp
+  Quaternion.cpp
+  Vector2.cpp
+  Vector3.cpp
+  Vector4.cpp
   NullX.vcxproj -> C:\Users\CaptainKirk\Desktop\NullX\NullX\build\Release\NullX32.lib

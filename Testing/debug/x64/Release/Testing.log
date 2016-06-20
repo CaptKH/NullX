@@ -1,6 +1,8 @@
 ﻿  main.cpp
   Generating code
-  All 9 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  4 of 9 functions (44.4%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Testing.vcxproj -> C:\Users\CaptainKirk\Desktop\NullX\Testing\build\x64\Release\Testing.exe
   Testing.vcxproj -> C:\Users\CaptainKirk\Desktop\NullX\Testing\build\x64\Release\Testing.pdb (Full PDB)

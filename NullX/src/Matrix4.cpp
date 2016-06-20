@@ -112,31 +112,45 @@ namespace NullX
         return RotateX(roll) * RotateY(pitch) * RotateY(yaw);
     }
 
-    Matrix4 Matrix4::Rotate(const Vector3& vec)
+    Matrix4 Matrix4::Rotate(const Vector3& vec, const float angle)
     {
-        return Matrix4();
+        return Rotate(vec.x * angle, vec.y * angle, vec.z * angle);
     }
 
-    Matrix4 Matrix4::RotateX(const float deg)
+    Matrix4 Matrix4::Rotate(const Quaternion& quat)
+    {
+        Quaternion qNorm = Quaternion::Normalized(quat);
+        float wSqr = qNorm.w * qNorm.w;
+        float xSqr = qNorm.x * qNorm.x;
+        float ySqr = qNorm.y * qNorm.y;
+        float zSqr = qNorm.z * qNorm.z;
+
+        return Matrix4(wSqr + xSqr - ySqr - zSqr, (2 * qNorm.x * qNorm.y) - (2 * qNorm.w * qNorm.z), (2 * qNorm.x * qNorm.z) + (2 * qNorm.w * qNorm.y), 0,
+                      (2 * qNorm.x * qNorm.y) + (2 * qNorm.w * qNorm.z), wSqr - xSqr + ySqr - zSqr, (2 * qNorm.y * qNorm.z) - (2 * qNorm.w * qNorm.x), 0,
+                      (2 * qNorm.x * qNorm.z) - (2 * qNorm.w * qNorm.y), (2 * qNorm.y * qNorm.z) + (2 * qNorm.w * qNorm.x), wSqr - xSqr - ySqr + zSqr, 0,
+                      0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    Matrix4 Matrix4::RotateX(const float angle)
     {
         return Matrix4(1.0f, 0.0f, 0.0f, 0.0f,
-                       0.0f, cosf(deg), -sinf(deg), 0.0f,
-                       0.0f, sinf(deg),  cosf(deg), 0.0f,
+                       0.0f, cosf(angle), -sinf(angle), 0.0f,
+                       0.0f, sinf(angle),  cosf(angle), 0.0f,
                        0.0f, 0.0f, 0.0f, 1.0f);
     }
 
-    Matrix4 Matrix4::RotateY(const float deg)
+    Matrix4 Matrix4::RotateY(const float angle)
     {
-        return Matrix4(cosf(deg), 0.0f,  sinf(deg), 0.0f,
+        return Matrix4(cosf(angle), 0.0f,  sinf(angle), 0.0f,
                        0.0f, 1.0f, 0.0f, 0.0f,
-                       -sinf(deg), 0.0f, cosf(deg), 0.0f,
+                       -sinf(angle), 0.0f, cosf(angle), 0.0f,
                        0.0f, 0.0f, 0.0f, 1.0f);
     }
 
-    Matrix4 Matrix4::RotateZ(const float deg)
+    Matrix4 Matrix4::RotateZ(const float angle)
     {
-        return Matrix4(cosf(deg), -sinf(deg), 0.0f, 0.0f,
-                       sinf(deg),  cosf(deg), 0.0f, 0.0f,
+        return Matrix4(cosf(angle), -sinf(angle), 0.0f, 0.0f,
+                       sinf(angle),  cosf(angle), 0.0f, 0.0f,
                        0.0f, 0.0f, 1.0f, 0.0f,
                        0.0f, 0.0f, 0.0f, 1.0f);
     }
@@ -194,9 +208,9 @@ namespace NullX
         return Matrix4::Transpose(Rotate(roll, pitch, yaw));
     }
 
-    Matrix4 Matrix4::InvRotate(const Vector3& vec)
+    Matrix4 Matrix4::InvRotate(const Vector3& vec, const float angle)
     {
-        return Matrix4::Transpose(Rotate(vec));
+        return Matrix4::Transpose(Rotate(vec, angle));
     }
     
     Matrix4 Matrix4::InvRotate(const Matrix4& mat)
@@ -315,21 +329,6 @@ namespace NullX
         return matrix[num];
     }
 
-    Vector4 Matrix4::operator * (Vector4& vec)
-    {
-        Vector4 toReturn = Vector4(0.0f, 0.0f, 0.0f, vec.w);
-        
-        for (int i = 0; i < 4; i++)
-        {
-            for (int j = 0; j < 4; j++)
-            {
-                toReturn[i] += matrix[i][j] * vec[j];
-            }
-        }
-
-        return toReturn;
-    }
-
     Matrix4 Matrix4::operator + (const Matrix4& mat)
     {
         return Matrix4(xx + mat.xx, xy + mat.xy, xz + mat.xz, xw + mat.xw,
@@ -344,6 +343,21 @@ namespace NullX
                        yx - mat.yx, yy - mat.yy, yz - mat.yz, yw - mat.yw,
                        zx - mat.zx, zy - mat.zy, zz - mat.zz, zw - mat.zw,
                        wx - mat.wx, wy - mat.wy, wz - mat.wz, 1.0f);
+    }
+
+    Vector4 Matrix4::operator * (Vector4& vec)
+    {
+        Vector4 toReturn = Vector4(0.0f, 0.0f, 0.0f, vec.w);
+
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                toReturn[i] += matrix[i][j] * vec[j];
+            }
+        }
+
+        return toReturn;
     }
 
     Matrix4 Matrix4::operator * (Matrix4& mat)
@@ -389,6 +403,12 @@ namespace NullX
     Matrix4 Matrix4::operator -= (const Matrix4& mat)
     {
         *this = *this - mat;
+        return *this;
+    }
+
+    Matrix4 Matrix4::operator *= (Matrix4& mat)
+    {
+        *this = *this * mat;
         return *this;
     }
 
