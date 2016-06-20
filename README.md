@@ -1,4 +1,5 @@
 # NullX (Accelerated) C++ Math Library
+##### Full Documentation: people.rit.edu/kah4525/NullX
 NullX is a C++ SIMD-optimized mathematics library made for use in graphics rendering and game programming.
 The aim for the library is to provide a simple guide to SIMD optimization, while maintaining an efficient use of the 
 CPU's hardware. Development will be done in phases, with each phase bringing major improvements to the speed and 
