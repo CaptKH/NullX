@@ -5,25 +5,23 @@ CPU's hardware. Development will be done in phases, with each phase bringing maj
 potency of the library.
 
 ## Phase 1 - Initial Architecture
-#### Completed - 6/15/16
+### Completed - 6/15/16
 - Functionality for Vector2, Vector3, Vector4 & Matrix4x4
 - Commonly used functions (Clamp, Floor, Ceiling, etc.)
 
-## Phase 2 - Quaternions & Documentation
+## Phase 2 - Quaternions & Doxygen
+### Completed 6/20/16
 - Implement the magic of Quaternions
-- Document existing code (function headers)
+- Doxygen documentation in NullX header
 
-## Phase 3 - Testing #1
-- Fully test existing codebase
-
-## Phase 4 - SIMD Vectors
+## Phase 3 - SIMD Vectors
 - Implement intrinsics for Vector2, Vector3 & Vector4 classes
-- Basic documentation of new SIMD functionality
+- Fully comment/test newly implemented functionality
 
-## Phase 5 - SIMD Matrices
-- Implement intrinsics for Matrix4x4
-- Basic documentation of new SIMD functionality
+## Phase 4 - SIMD Matrices & Quaternions
+- Implement intrinsics for Matrix4x4 and Quaternion classes
+- Fully comment/test newly implemented functionality
 
-## Phase 6 - Final Documentation & Testing #2
-- Finalize all documentation of SIMD functionality
-- Fully test newly added SIMD functionality
+## Phase 5 - Final Documentation & Wrap-up
+- Finalize all documentation
+- Begin planning next phases of improvement
