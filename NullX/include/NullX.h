@@ -8,6 +8,7 @@
 
 #include <math.h>
 #include <vector>
+#include <intrin.h>
 
 namespace NullX
 {
@@ -26,7 +27,7 @@ namespace NullX
     class Quaternion;
 
     /// Contains functionality necessary for performing Vector2 operations
-    class Vector2
+    class __declspec(align(16)) Vector2
     {
     public:
         union
@@ -41,6 +42,9 @@ namespace NullX
 
             /// Array representing elements of Vector2 -> [0] = x, [1] = y
             float elements[2];
+
+            /// Vector representing elements of Vector2 used for SIMD functions
+            __m128 elementsSIMD;
         };
 
         /// Vector2 representing Up in 2D space (0, 1)
@@ -56,6 +60,8 @@ namespace NullX
         Vector2();
         /// Vector2 Constructor.  Sets elements equal to given values
         Vector2(float _x, float _y);
+        /// Vector2 Constructor.  Sets elements equal to given __m128
+        Vector2(__m128 vec);
         /// Vector2 Constructor.  Sets elements equal to given Vector2
         Vector2(const Vector2& vec);
         /// Vector2 Constructor.  Sets elements equal to given Vector3
@@ -137,7 +143,7 @@ namespace NullX
     };
 
     /// Contains functionality necessary for performing Vector3 operations
-    class Vector3
+    class __declspec(align(16)) Vector3
     {
     public:
         union
@@ -154,6 +160,9 @@ namespace NullX
 
             /// Array representing elements of Vector3 -> [0] = x, [1] = y, [2] = z
             float elements[3];
+
+            /// Vector representing elements of Vector2 used for SIMD functions
+            __m128 elementsSIMD;
         };
 
         /// Vector3 representing Up in 3D space (0, 1, 0)
@@ -173,6 +182,8 @@ namespace NullX
         Vector3();
         /// Vector3 Constructor. Sets elements equal to given values
         Vector3(float _x, float _y, float _z);
+        /// Vector3 Constructor.  Sets elements equal to given __m128
+        Vector3(__m128 vec);
         /// Vector3 Constructor.  Sets elements equal to given Vector2
         Vector3(const Vector2& vec);
         /// Vector3 Constructor.  Sets elements equal to given Vector3
@@ -258,7 +269,7 @@ namespace NullX
     };
 
     /// Contains functionality necessary for performing Vector4 operations
-    class Vector4
+    class __declspec(align(16)) Vector4
     {
     public:
         union
@@ -277,6 +288,9 @@ namespace NullX
 
             /// Array representing elements of Vector4 -> [0] = x, [1] = y, [2] = z, [3] = w
             float elements[4];
+
+            /// Vector representing elements of Vector2 used for SIMD functions
+            __m128 elementsSIMD;
         };
 
         /// Vector4 representing Up in 4D space (0, 1, 0, 0)
@@ -296,6 +310,8 @@ namespace NullX
         Vector4();
         /// Vector4 Constructor. Sets elements equal to given values
         Vector4(float _x, float _y, float _z, float _w);
+        /// Vector4 Constructor.  Sets elements equal to given __m128 & _w
+        Vector4(__m128 vec, const float _w);
         /// Vector4 Constructor.  Sets elements equal to given Vector2
         Vector4(const Vector2& vec, const float _w);
         /// Vector4 Constructor.  Sets elements equal to given Vector3
@@ -381,7 +397,7 @@ namespace NullX
     };
 
     /// Contains functionality necessary for performing 4x4 matrix operations
-    class Matrix4
+    class __declspec(align(16)) Matrix4
     {
     public:
         union
@@ -395,12 +411,13 @@ namespace NullX
             };
             
             /// Array representing rows of matrix -> [0] = row1, [1] = row2, [2] = row3, [3] = row4
-            struct {
-                Vector4 rows[4];
-            };
+            Vector4 rows[4];
 
             /// 2D Array representing elements of matrix
             float matrix[4][4];
+
+            /// Array representing rows of matrix used for SIMD functions
+            __m128 matrixSIMD[4];
         };
 
         /// Matrix4 representing 4x4 Identity matrix
@@ -511,7 +528,7 @@ namespace NullX
     };
 
     /// Contains functionality necessary to perform Quaternion operations
-    class Quaternion
+    class __declspec(align(16)) Quaternion
     {
     public:
         union 

@@ -15,47 +15,50 @@ namespace NullX
     Vector4 Vector4::Forward  = Vector4( 0.0f,  0.0f,  1.0f, 0.0f);
     Vector4 Vector4::Backward = Vector4( 0.0f,  0.0f, -1.0f, 0.0f);
 
-    Vector4::Vector4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f)
+    Vector4::Vector4() : elementsSIMD(_mm_setzero_ps())
     {
     }
 
-    Vector4::Vector4(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w)
+    Vector4::Vector4(float _x, float _y, float _z, float _w) : elementsSIMD(_mm_setr_ps(_x, _y, _z, _w))
+    {
+    }
+    
+    Vector4::Vector4(__m128 vec, const float _w) : elementsSIMD(vec), w(_w)
     {
     }
 
-    Vector4::Vector4(const Vector2& vec, const float _w) : x(vec.x), y(vec.y), z(0.0f), w(_w)
+    Vector4::Vector4(const Vector2& vec, const float _w) : elementsSIMD(_mm_setr_ps(vec.x, vec.y, 0.0f, _w))
     {
     }
 
-    Vector4::Vector4(const Vector3& vec, const float _w) : x(vec.x), y(vec.y), z(vec.z), w(_w)
+    Vector4::Vector4(const Vector3& vec, const float _w) : elementsSIMD(_mm_setr_ps(vec.x, vec.y, vec.z, _w))
     {
     }
 
-    Vector4::Vector4(const Vector4& vec) : x(vec.x), y(vec.y), z(vec.z), w(vec.w)
+    Vector4::Vector4(const Vector4& vec) : elementsSIMD(vec.elementsSIMD)
     {
     }
 
     void Vector4::Normalize()
     {
         float mag = Magnitude(*this);
-        x /= mag;
-        y /= mag;
-        z /= mag;
+        __m128 magVec = _mm_setr_ps(mag, mag, mag, 1.0f);
+        elementsSIMD = _mm_div_ps(elementsSIMD, magVec);
     }
 
     float Vector4::Magnitude(const Vector4& vec)
     {
-        return sqrtf((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
+        return sqrtf(Dot(vec, vec));
     }
 
     float Vector4::MagnitudeSqr(const Vector4& vec)
     {
-        return (vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z);
+        return Dot(vec, vec);
     }
 
     float Vector4::Dot(const Vector4& vec1, const Vector4& vec2)
     {
-        return (vec1.x * vec2.x) + (vec1.y * vec2.y) + (vec1.z * vec2.z);
+        return _mm_dp_ps(vec1.elementsSIMD, vec2.elementsSIMD, 0x71).m128_f32[0];
     }
 
     float Vector4::Angle(Vector4& vec1, Vector4& vec2)
@@ -97,17 +100,22 @@ namespace NullX
 
     Vector4 Vector4::Cross(const Vector4& vec1, const Vector4& vec2)
     {
-        return Vector4((vec1.y * vec2.z) - (vec1.z * vec2.y), (vec1.z * vec2.x) - (vec1.x * vec2.z), (vec1.x * vec2.y) - (vec1.y * vec2.x), 0.0f);
+        __m128 v1 = _mm_mul_ps(_mm_shuffle_ps(vec1.elementsSIMD, vec1.elementsSIMD, _MM_SHUFFLE(3, 0, 2, 1)), _mm_shuffle_ps(vec2.elementsSIMD, vec2.elementsSIMD, _MM_SHUFFLE(3, 1, 0, 2)));
+        __m128 v2 = _mm_mul_ps(_mm_shuffle_ps(vec1.elementsSIMD, vec1.elementsSIMD, _MM_SHUFFLE(3, 1, 0, 2)), _mm_shuffle_ps(vec2.elementsSIMD, vec2.elementsSIMD, _MM_SHUFFLE(3, 0, 2, 1)));
+        return Vector4(_mm_sub_ps(v1, v2), 0.0f);
     }
 
     bool Vector4::operator == (const Vector4& vec)
     {
-        return (x == vec.x) ? (y == vec.y) ? (z == vec.z) ? true : false : false : false;
+        __m128 compare = _mm_cmpeq_ps(elementsSIMD, vec.elementsSIMD);
+        int mask = _mm_movemask_ps(compare);
+
+        return (mask == 0xF) ? true : false;
     }
 
     bool Vector4::operator != (const Vector4& vec)
     {
-        return (x != vec.x) ? (y != vec.y) ? (z != vec.z) ? true : false : false : false;
+        return !(*this == vec);
     }
 
     float& Vector4::operator [] (const int num)
@@ -117,53 +125,47 @@ namespace NullX
 
     Vector4 Vector4::operator + (const Vector4& vec)
     {
-        return Vector4(x + vec.x, y + vec.y, z + vec.z, w);
+        return Vector4(_mm_add_ps(elementsSIMD, vec.elementsSIMD), w);
     }
 
     Vector4 Vector4::operator - (const Vector4& vec)
     {
-        return Vector4(x - vec.x, y - vec.y, z - vec.z, w);
+        return Vector4(_mm_sub_ps(elementsSIMD, vec.elementsSIMD), w);
     }
 
     Vector4 Vector4::operator * (const float num)
     {
-        return Vector4(x * num, y * num, z * num, w);
+        __m128 mult = _mm_set1_ps(num);
+        return Vector4(_mm_mul_ps(elementsSIMD, mult), w);
     }
 
     Vector4 Vector4::operator / (const float num)
     {
-        return Vector4(x / num, y / num, z / num, w);
+        __m128 div = _mm_set1_ps(num);
+        return Vector4(_mm_mul_ps(elementsSIMD, div), w);
     }
 
     Vector4 Vector4::operator += (const Vector4& vec)
     {
-        x += vec.x;
-        y += vec.y;
-        z += vec.z;
+        *this = *this + vec;
         return *this;
     }
 
     Vector4 Vector4::operator -= (const Vector4& vec)
     {
-        x -= vec.x;
-        y -= vec.y;
-        z -= vec.z;
+        *this = *this - vec;
         return *this;
     }
 
     Vector4 Vector4::operator *= (const float num)
     {
-        x *= num;
-        y *= num;
-        z *= num;
+        *this = *this * num;
         return *this;
     }
 
     Vector4 Vector4::operator /= (const float num)
     {
-        x /= num;
-        y /= num;
-        z /= num;
+        *this = *this / num;
         return *this;
     }
 }

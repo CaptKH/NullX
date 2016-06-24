@@ -8,54 +8,56 @@
 
 namespace NullX
 {
-    Vector3 Vector3::Up       = Vector3( 0.0f,  1.0f,  0.0f);
-    Vector3 Vector3::Down     = Vector3( 0.0f, -1.0f,  0.0f);
-    Vector3 Vector3::Left     = Vector3(-1.0f,  0.0f,  0.0f);
-    Vector3 Vector3::Right    = Vector3( 1.0f,  0.0f,  0.0f);
-    Vector3 Vector3::Forward  = Vector3( 0.0f,  0.0f,  1.0f);
-    Vector3 Vector3::Backward = Vector3( 0.0f,  0.0f, -1.0f);
+    Vector3 Vector3::Up = Vector3(0.0f, 1.0f, 0.0f);
+    Vector3 Vector3::Down = Vector3(0.0f, -1.0f, 0.0f);
+    Vector3 Vector3::Left = Vector3(-1.0f, 0.0f, 0.0f);
+    Vector3 Vector3::Right = Vector3(1.0f, 0.0f, 0.0f);
+    Vector3 Vector3::Forward = Vector3(0.0f, 0.0f, 1.0f);
+    Vector3 Vector3::Backward = Vector3(0.0f, 0.0f, -1.0f);
 
-    Vector3::Vector3() : x(0.0f), y(0.0f), z(0.0f)
+    Vector3::Vector3() : elementsSIMD(_mm_setzero_ps())
     {
     }
 
-    Vector3::Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z)
+    Vector3::Vector3(float _x, float _y, float _z) : elementsSIMD(_mm_setr_ps(_x, _y, _z, 0.0f))
     {
     }
 
-    Vector3::Vector3(const Vector2& vec) : x(vec.x), y(vec.y), z(0.0f)
+    Vector3::Vector3(__m128 vec) : elementsSIMD(vec)
     {
     }
 
-    Vector3::Vector3(const Vector3& vec) : x(vec.x), y(vec.y), z(vec.z)
+    Vector3::Vector3(const Vector2& vec) : elementsSIMD(_mm_setr_ps(vec.x, vec.y, 0.0f, 0.0f))
     {
     }
 
-    Vector3::Vector3(const Vector4& vec) : x(vec.x), y(vec.y), z(vec.z)
+    Vector3::Vector3(const Vector3& vec) : elementsSIMD(vec.elementsSIMD)
+    {
+    }
+
+    Vector3::Vector3(const Vector4& vec) : elementsSIMD(_mm_setr_ps(vec.x, vec.y, vec.z, 0.0f))
     {
     }
 
     void Vector3::Normalize()
     {
-        float mag = Magnitude(*this);
-        x /= mag;
-        y /= mag;
-        z /= mag;
+        __m128 mag = _mm_set1_ps(Magnitude(*this));
+        elementsSIMD = _mm_div_ps(elementsSIMD, mag);
     }
 
     float Vector3::Magnitude(const Vector3& vec)
     {
-        return sqrtf((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
+        return sqrtf(Dot(vec, vec));
     }
 
     float Vector3::MagnitudeSqr(const Vector3& vec)
     {
-        return (vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z);
+        return Dot(vec, vec);
     }
 
     float Vector3::Dot(const Vector3& vec1, const Vector3& vec2)
     {
-        return (vec1.x * vec2.x) + (vec1.y * vec2.y) + (vec1.z * vec2.z);
+        return _mm_dp_ps(vec1.elementsSIMD, vec2.elementsSIMD, 0x71).m128_f32[0];
     }
 
     float Vector3::Angle(Vector3& vec1, Vector3& vec2)
@@ -87,7 +89,9 @@ namespace NullX
 
     Vector3 Vector3::Cross(const Vector3& vec1, const Vector3& vec2)
     {
-        return Vector3((vec1.y * vec2.z) - (vec1.z * vec2.y), (vec1.z * vec2.x) - (vec1.x * vec2.z), (vec1.x * vec2.y) - (vec1.y * vec2.x));
+        __m128 v1 = _mm_mul_ps(_mm_shuffle_ps(vec1.elementsSIMD, vec1.elementsSIMD, _MM_SHUFFLE(3, 0, 2, 1)), _mm_shuffle_ps(vec2.elementsSIMD, vec2.elementsSIMD, _MM_SHUFFLE(3, 1, 0, 2)));
+        __m128 v2 = _mm_mul_ps(_mm_shuffle_ps(vec1.elementsSIMD, vec1.elementsSIMD, _MM_SHUFFLE(3, 1, 0, 2)), _mm_shuffle_ps(vec2.elementsSIMD, vec2.elementsSIMD, _MM_SHUFFLE(3, 0, 2, 1)));
+        return Vector3(_mm_sub_ps(v1, v2));
     }
 
     Vector2 Vector3::ToVector2(const Vector3& vec)
@@ -102,12 +106,15 @@ namespace NullX
 
     bool Vector3::operator == (const Vector3& vec)
     {
-        return (x == vec.x) ? (y == vec.y) ? (z == vec.z) ? true : false : false : false;
+        __m128 compare = _mm_cmpeq_ps(elementsSIMD, vec.elementsSIMD);
+        int mask = _mm_movemask_ps(compare);
+
+        return (mask == 0xF) ? true : false;
     }
 
     bool Vector3::operator != (const Vector3& vec)
     {
-        return (x != vec.x) ? (y != vec.y) ? (z != vec.z)? true : false : false : false;
+        return !(*this == vec);
     }
 
     float Vector3::operator [] (const int num)
@@ -117,53 +124,47 @@ namespace NullX
 
     Vector3 Vector3::operator + (const Vector3& vec)
     {
-        return Vector3(x + vec.x, y + vec.y, z + vec.z);
+        return Vector3(_mm_add_ps(elementsSIMD, vec.elementsSIMD));
     }
 
     Vector3 Vector3::operator - (const Vector3& vec)
     {
-        return Vector3(x - vec.x, y - vec.y, z - vec.z);
+        return Vector3(_mm_sub_ps(elementsSIMD, vec.elementsSIMD));
     }
 
     Vector3 Vector3::operator * (const float num)
     {
-        return Vector3(x * num, y * num, z * num);
+        __m128 mult = _mm_set1_ps(num);
+        return Vector3(_mm_mul_ps(elementsSIMD, mult));
     }
 
     Vector3 Vector3::operator / (const float num)
     {
-        return Vector3(x / num, y / num, z / num);
+        __m128 div = _mm_set1_ps(num);
+        return Vector3(_mm_div_ps(elementsSIMD, div));
     }
 
     Vector3 Vector3::operator += (const Vector3& vec)
     {
-        x += vec.x;
-        y += vec.y;
-        z += vec.z;
+        *this = *this + vec;
         return *this;
     }
 
     Vector3 Vector3::operator -= (const Vector3& vec)
     {
-        x -= vec.x;
-        y -= vec.y;
-        z -= vec.z;
+        *this = *this - vec;
         return *this;
     }
 
     Vector3 Vector3::operator *= (const float num)
     {
-        x *= num;
-        y *= num;
-        z *= num;
+        *this = *this * num;
         return *this;
     }
 
     Vector3 Vector3::operator /= (const float num)
     {
-        x /= num;
-        y /= num;
-        z /= num;
+        *this = *this / num;
         return *this;
     }
 }
