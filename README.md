@@ -17,11 +17,11 @@ potency of the library.
 
 ## Phase 3 - SIMD Vectors
 - Implement intrinsics for Vector2, Vector3 & Vector4 classes
-- Fully comment/test newly implemented functionality
+- Fully test newly implemented functionality
 
 ## Phase 4 - SIMD Matrices & Quaternions
 - Implement intrinsics for Matrix4x4 and Quaternion classes
-- Fully comment/test newly implemented functionality
+- Fully test newly implemented functionality
 
 ## Phase 5 - Final Documentation & Wrap-up
 - Finalize all documentation
