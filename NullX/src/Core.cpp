@@ -59,4 +59,14 @@ namespace NullX
     {
         return (num - Floor(num) >= 0.5f) ? Ceiling(num) : Floor(num);
     }
+
+    constexpr float ToDegrees(const float rad)
+    {
+        return rad * 57.295779513f;
+    }
+
+    constexpr float ToRadians(const float deg)
+    {
+        return deg * 0.0174532925f;
+    }
 }

@@ -161,7 +161,7 @@ namespace NullX
             /// Array representing elements of Vector3 -> [0] = x, [1] = y, [2] = z
             float elements[3];
 
-            /// Vector representing elements of Vector2 used for SIMD functions
+            /// Vector representing elements of Vector3 used for SIMD functions
             __m128 elementsSIMD;
         };
 
@@ -289,7 +289,7 @@ namespace NullX
             /// Array representing elements of Vector4 -> [0] = x, [1] = y, [2] = z, [3] = w
             float elements[4];
 
-            /// Vector representing elements of Vector2 used for SIMD functions
+            /// Vector representing elements of Vector4 used for SIMD functions
             __m128 elementsSIMD;
         };
 
@@ -410,14 +410,14 @@ namespace NullX
                 float wx, wy, wz, ww;
             };
             
-            /// Array representing rows of matrix -> [0] = row1, [1] = row2, [2] = row3, [3] = row4
-            Vector4 rows[4];
-
             /// 2D Array representing elements of matrix
             float matrix[4][4];
 
+            /// Array representing rows of matrix -> [0] = row1, [1] = row2, [2] = row3, [3] = row4
+            Vector4 rows[4];
+
             /// Array representing rows of matrix used for SIMD functions
-            __m128 matrixSIMD[4];
+            __m128 rowsSIMD[4];
         };
 
         /// Matrix4 representing 4x4 Identity matrix
@@ -448,6 +448,10 @@ namespace NullX
         /// Calculates the LU Decomposition of the given Matrix4
         static std::vector<Matrix4> LUDecomposition(Matrix4& mat);
 
+        /// Creates a 4x4 perspective projection matrix based off of the given parameters
+        static Matrix4 Perspective(const float fov, const float width, const float height, const float zNear, const float zFar);
+        /// Creates a 4x4 orthographic projection matrix based off of the given parameters
+        static Matrix4 Orthographic(const float top, const float bottom, const float right, const float left, const float zNear, const float zFar);
         /// Creates a Translation matrix based off of the given values
         static Matrix4 Translate(const float x, const float y, const float z);
         /// Creates a Translation matrix based off of the given Vector3
@@ -547,18 +551,17 @@ namespace NullX
 
             /// Array representing elements of Quaternion -> [0] = w, [1] = x, [2] = y, [3] = z
             float elements[4];
+
+            /// Vector representing elements of Quaternion used for SIMD functions
+            __m128 elementsSIMD;
         };
 
         /// Quaternion Default Constructor
         Quaternion();
         /// Quaternion Constructor.  Sets elements equal to the elements in quat
         Quaternion(const Quaternion& quat);
-        /// Quaternion Constructor.  Sets elements equal to the given values
-        Quaternion( const float _x, const float _y, const float _z, const float angle);
         /// Quaternion Constructor.  Sets elements equal to elements in Vector3 and angle
         Quaternion( const Vector3& vec, const float angle);
-        /// Quaternion Constructor.  Sets elements equal to elements in Vector4 and angle
-        Quaternion( const Vector4& vec, const float angle);
 
         /// Normalizes Quaternion to unit length
         void Normalize();
@@ -608,36 +611,34 @@ namespace NullX
     /// Calculates the value of num to the pow power
     /// \return num^pow
     extern constexpr float Pow(const float num, const int pow);
-
     /// Calculates the value of e to the pow power
     /// \return e^pow
     extern constexpr float Exp(const int pow);
-
     /// Calculates the absolute value of x
     /// \return |x|
     extern constexpr float Abs(const float x);
-
     /// Calculates and returns the minimum value between x & y
     /// \return minimum value between x & y
     extern constexpr float Min(const float x, const float y);
-
     /// Calculates and returns the maximum value between x & y
     /// \return maximum value between x & y
     extern constexpr float Max(const float x, const float y);
-
     /// Clamps the value of num between min & max
     /// \return num clamped between min & max
     extern constexpr float Clamp(const float num, const float min, const float max);
-
     /// Truncates num down to the nearest integer
     /// \return num truncated down to nearest integer
     extern constexpr float Floor(const float num);
-
     /// Truncates num up to nearest integer
     /// \return num truncates up to nearest integer
     extern constexpr float Ceiling(const float num);
-
     /// Rounds num to nearest integer
     /// \return num rounded to nearest integer
     extern constexpr float Round(const float num);
+    /// Transforms the given radian to degrees
+    /// \return rad in degreesw
+    extern constexpr float ToDegrees(const float rad);
+    /// Transforms the given degrees to radians
+    /// \return deg in radians
+    extern constexpr float ToRadians(const float deg);
 }

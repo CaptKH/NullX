@@ -9,7 +9,10 @@
 
 namespace NullX
 {
-    Matrix4 Matrix4::Identity = Matrix4(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+    Matrix4 Matrix4::Identity = Matrix4(1.0f, 0.0f, 0.0f, 0.0f, 
+                                        0.0f, 1.0f, 0.0f, 0.0f, 
+                                        0.0f, 0.0f, 1.0f, 0.0f, 
+                                        0.0f, 0.0f, 0.0f, 1.0f);
 
     Matrix4::Matrix4()
     {
@@ -19,12 +22,12 @@ namespace NullX
     Matrix4::Matrix4(float _xx, float _xy, float _xz, float _xw,
                      float _yx, float _yy, float _yz, float _yw,
                      float _zx, float _zy, float _zz, float _zw,
-                     float _wx, float _wy, float _wz, float _ww) :
-                     xx(_xx), xy(_xy), xz(_xz), xw(_xw),
-                     yx(_yx), yy(_yy), yz(_yz), yw(_yw),
-                     zx(_zx), zy(_zy), zz(_zz), zw(_zw),
-                     wx(_wx), wy(_wy), wz(_wz), ww(_ww)
+                     float _wx, float _wy, float _wz, float _ww)
     {
+        rowsSIMD[0] = _mm_setr_ps(_xx, _xy, _xz, _xw);
+        rowsSIMD[1] = _mm_setr_ps(_yx, _yy, _yz, _yw);
+        rowsSIMD[2] = _mm_setr_ps(_zx, _zy, _zz, _zw);
+        rowsSIMD[3] = _mm_setr_ps(_wx, _wy, _wz, _ww);
     }
 
     Matrix4::Matrix4(const Matrix4& mat)
@@ -91,6 +94,42 @@ namespace NullX
                (decomp[1].xx * decomp[1].yy * decomp[1].zz * decomp[1].ww));
     }
 
+    Matrix4 Matrix4::Perspective(const float fov, const float width, const float height, const float zNear, const float zFar)
+    {
+        // Credit to HatchitMath for formulas
+        // Upon testing non-SIMD version was much faster... I'll come back to this
+        float aspect = height / width;
+        float depth  = zFar - zNear;
+        float xx = 1 / tanf(0.5f * fov);
+        float yy = xx * aspect;
+        float zz = -(zFar + zNear) / depth;
+        float zw = -(2 * zFar * zNear) / depth;
+
+        return Matrix4(xx, 0.0f, 0.0f, 0.0f,
+                       0.0f, yy, 0.0f, 0.0f,
+                       0.0f, 0.0f, zz, zw,
+                       0.0f, 0.0f, -1.0f, 0.0f);
+    }
+
+    Matrix4 Matrix4::Orthographic(const float top, const float bottom, const float right, const float left, const float zNear, const float zFar)
+    {
+        // Credit to HathitMath for formulas
+        // Calculate values for diagonal
+        __m128 diag1 = _mm_set1_ps(2.0f);
+        __m128 diag2 = _mm_setr_ps(right - left, top - bottom, zNear - zFar, 1.0f);
+        float* diag3 = _mm_div_ps(diag1, diag2).m128_f32;
+
+        // Calculate values for bottom row
+        __m128 bottom1 = _mm_setr_ps(right + left, top + bottom, zFar + zNear, 1.0f);
+        __m128 bottom2 = _mm_setr_ps(left - right, bottom - top, zNear - zFar, 1.0f);
+        float* bottom3 = _mm_div_ps(bottom1, bottom2).m128_f32;
+
+        return Matrix4(diag3[0], 0.0f, 0.0f, 0.0f,
+                       0.0f, diag3[1], 0.0f, 0.0f,
+                       0.0f, 0.0f, diag3[2], 0.0f,
+                       bottom3[0], bottom3[1], bottom3[2], 1.0f);
+    }
+
     Matrix4 Matrix4::Translate(const float x, const float y, const float z)
     {
         return Matrix4(1.0f, 0.0f, 0.0f, x,
@@ -109,7 +148,7 @@ namespace NullX
 
     Matrix4 Matrix4::Rotate(const float roll, const float pitch, const float yaw) 
     {
-        return RotateX(roll) * RotateY(pitch) * RotateY(yaw);
+        return RotateX(roll) * RotateY(pitch) * RotateZ(yaw);
     }
 
     Matrix4 Matrix4::Rotate(const Vector3& vec, const float angle)
@@ -120,15 +159,17 @@ namespace NullX
     Matrix4 Matrix4::Rotate(const Quaternion& quat)
     {
         Quaternion qNorm = Quaternion::Normalized(quat);
-        float wSqr = qNorm.w * qNorm.w;
-        float xSqr = qNorm.x * qNorm.x;
-        float ySqr = qNorm.y * qNorm.y;
-        float zSqr = qNorm.z * qNorm.z;
+        float mag = Quaternion::Magnitude(qNorm);
+        float* elementsSqr = _mm_mul_ps(quat.elementsSIMD, quat.elementsSIMD).m128_f32;
+        float wSqr = elementsSqr[0];
+        float xSqr = elementsSqr[1];
+        float ySqr = elementsSqr[2];
+        float zSqr = elementsSqr[3];
 
-        return Matrix4(wSqr + xSqr - ySqr - zSqr, (2 * qNorm.x * qNorm.y) - (2 * qNorm.w * qNorm.z), (2 * qNorm.x * qNorm.z) + (2 * qNorm.w * qNorm.y), 0,
-                      (2 * qNorm.x * qNorm.y) + (2 * qNorm.w * qNorm.z), wSqr - xSqr + ySqr - zSqr, (2 * qNorm.y * qNorm.z) - (2 * qNorm.w * qNorm.x), 0,
-                      (2 * qNorm.x * qNorm.z) - (2 * qNorm.w * qNorm.y), (2 * qNorm.y * qNorm.z) + (2 * qNorm.w * qNorm.x), wSqr - xSqr - ySqr + zSqr, 0,
-                      0.0f, 0.0f, 0.0f, 1.0f);
+        return Matrix4(1 - 2 * (ySqr + zSqr), 2 * (qNorm.x * qNorm.y - qNorm.z * qNorm.w), 2 * (qNorm.w * qNorm.y + qNorm.x * qNorm.z), 0,
+                       2 * (qNorm.x * qNorm.z + qNorm.w * qNorm.z), 1 - 2 * (xSqr + zSqr), 2 * (qNorm.y * qNorm.z - qNorm.x * qNorm.w), 0,
+                       2 * (qNorm.x * qNorm.z - qNorm.y * qNorm.w), 2 * (qNorm.w * qNorm.x + qNorm.y * qNorm.z), 1 - 2 * (xSqr + ySqr), 0,
+                       0.0f, 0.0f, 0.0f, 1.0f);
     }
 
     Matrix4 Matrix4::RotateX(const float angle)
@@ -198,9 +239,9 @@ namespace NullX
     Matrix4 Matrix4::InvTranslate(const Matrix4& mat)
     {
         return Matrix4(1.0f, 0.0f, 0.0f, -mat.xw,
-            0.0f, 1.0f, 0.0f, -mat.yw,
-            0.0f, 0.0f, 1.0f, -mat.zw,
-            0.0f, 0.0f, 0.0f, 1.0f);
+                       0.0f, 1.0f, 0.0f, -mat.yw,
+                       0.0f, 0.0f, 1.0f, -mat.zw,
+                       0.0f, 0.0f, 0.0f, 1.0f);
     }
 
     Matrix4 Matrix4::InvRotate(const float roll, const float pitch, const float yaw)
@@ -294,34 +335,17 @@ namespace NullX
 
     bool Matrix4::operator == (Matrix4& mat)
     {
-        for (int i = 0; i < 4; i++)
-        {
-            for (int j = 0; j < 4; j++)
-            {
-                if (matrix[i][j] != mat[i][j])
-                    return false;
-            }
-        }
+        int mask1 = _mm_movemask_ps(_mm_cmpeq_ps(rowsSIMD[0], mat.rowsSIMD[0]));
+        int mask2 = _mm_movemask_ps(_mm_cmpeq_ps(rowsSIMD[1], mat.rowsSIMD[1]));
+        int mask3 = _mm_movemask_ps(_mm_cmpeq_ps(rowsSIMD[2], mat.rowsSIMD[2]));
+        int mask4 = _mm_movemask_ps(_mm_cmpeq_ps(rowsSIMD[3], mat.rowsSIMD[3]));
 
-        return true;
+        return (mask1 == 0xF) ? (mask2 == 0xF) ? (mask3 == 0xF) ? (mask4 == 0xF) ? true : false : false : false : false;
     }
 
     bool Matrix4::operator != (Matrix4& mat)
     {
-        bool equal = true;
-        for (int i = 0; i < 4; i++)
-        {
-            for (int j = 0; j < 4; j++)
-            {
-                if (matrix[i][j] != mat[i][j])
-                {
-                    equal = false;
-                    break;
-                }
-            }
-        }
-
-        return !equal;
+        return !(*this == mat);
     }
 
     float* Matrix4::operator [] (const int num)
@@ -331,67 +355,79 @@ namespace NullX
 
     Matrix4 Matrix4::operator + (const Matrix4& mat)
     {
-        return Matrix4(xx + mat.xx, xy + mat.xy, xz + mat.xz, xw + mat.xw,
-                       yx + mat.yx, yy + mat.yy, yz + mat.yz, yw + mat.yw,
-                       zx + mat.zx, zy + mat.zy, zz + mat.zz, zw + mat.zw,
-                       wx + mat.wx, wy + mat.wy, wz + mat.wz, 1.0f);
+        Matrix4 toReturn = Matrix4(*this);
+        toReturn.rowsSIMD[0] = _mm_add_ps(toReturn.rowsSIMD[0], mat.rowsSIMD[0]);
+        toReturn.rowsSIMD[1] = _mm_add_ps(toReturn.rowsSIMD[1], mat.rowsSIMD[1]);
+        toReturn.rowsSIMD[2] = _mm_add_ps(toReturn.rowsSIMD[2], mat.rowsSIMD[2]);
+        toReturn.rowsSIMD[3] = _mm_add_ps(toReturn.rowsSIMD[3], mat.rowsSIMD[3]);
+
+        return toReturn;
     }
 
     Matrix4 Matrix4::operator - (const Matrix4& mat)
     {
-        return Matrix4(xx - mat.xx, xy - mat.xy, xz - mat.xz, xw - mat.xw,
-                       yx - mat.yx, yy - mat.yy, yz - mat.yz, yw - mat.yw,
-                       zx - mat.zx, zy - mat.zy, zz - mat.zz, zw - mat.zw,
-                       wx - mat.wx, wy - mat.wy, wz - mat.wz, 1.0f);
+        Matrix4 toReturn = Matrix4(*this);
+        toReturn.rowsSIMD[0] = _mm_sub_ps(toReturn.rowsSIMD[0], mat.rowsSIMD[0]);
+        toReturn.rowsSIMD[1] = _mm_sub_ps(toReturn.rowsSIMD[1], mat.rowsSIMD[1]);
+        toReturn.rowsSIMD[2] = _mm_sub_ps(toReturn.rowsSIMD[2], mat.rowsSIMD[2]);
+        toReturn.rowsSIMD[3] = _mm_sub_ps(toReturn.rowsSIMD[3], mat.rowsSIMD[3]);
+
+        return toReturn;
     }
 
     Vector4 Matrix4::operator * (Vector4& vec)
     {
-        Vector4 toReturn = Vector4(0.0f, 0.0f, 0.0f, vec.w);
-
-        for (int i = 0; i < 4; i++)
-        {
-            for (int j = 0; j < 4; j++)
-            {
-                toReturn[i] += matrix[i][j] * vec[j];
-            }
-        }
-
-        return toReturn;
+        return Vector4(_mm_dp_ps(rowsSIMD[0], vec.elementsSIMD, 0xF1).m128_f32[0],
+                       _mm_dp_ps(rowsSIMD[1], vec.elementsSIMD, 0xF1).m128_f32[0],
+                       _mm_dp_ps(rowsSIMD[2], vec.elementsSIMD, 0xF1).m128_f32[0],
+                       _mm_dp_ps(rowsSIMD[3], vec.elementsSIMD, 0xF1).m128_f32[0]);
     }
 
     Matrix4 Matrix4::operator * (Matrix4& mat)
     {
         Matrix4 toReturn = Matrix4();
+        __m128 cols[4] = { _mm_setr_ps(mat.xx, mat.yx, mat.zx, mat.wx),
+                           _mm_setr_ps(mat.xy, mat.yy, mat.zy, mat.wy),
+                           _mm_setr_ps(mat.xz, mat.yz, mat.zz, mat.wz),
+                           _mm_setr_ps(mat.xw, mat.yw, mat.zw, mat.ww) };
 
         for (int i = 0; i < 4; i++)
         {
-            for (int j = 0; j < 4; j++)
-            {
-                for (int k = 0; k < 4; k++)
-                {
-                    toReturn[j][i] += matrix[j][k] * mat[k][i];
-                }
-            }
+            toReturn.rowsSIMD[i] = _mm_setr_ps(_mm_dp_ps(rowsSIMD[i], cols[0], 0xF1).m128_f32[0],
+                                   _mm_dp_ps(rowsSIMD[i], cols[1], 0xF1).m128_f32[0],
+                                   _mm_dp_ps(rowsSIMD[i], cols[2], 0xF1).m128_f32[0],
+                                   _mm_dp_ps(rowsSIMD[i], cols[3], 0xF1).m128_f32[0]);
         }
+
+        toReturn[3][3] = 1.0f;
 
         return toReturn;
     }
 
     Matrix4 Matrix4::operator * (const float num)
     {
-        return Matrix4(xx * num, xy * num, xz * num, xw * num,
-                       yx * num, yy * num, yz * num, yw * num,
-                       zx * num, zy * num, zz * num, zw * num,
-                       wx * num, wy * num, wz * num, 1.0f);
+        Matrix4 toReturn = Matrix4(*this);
+        __m128 mult = _mm_set1_ps(num);
+
+        toReturn.rowsSIMD[0] = _mm_mul_ps(toReturn.rowsSIMD[0], mult);
+        toReturn.rowsSIMD[1] = _mm_mul_ps(toReturn.rowsSIMD[1], mult);
+        toReturn.rowsSIMD[2] = _mm_mul_ps(toReturn.rowsSIMD[2], mult);
+        toReturn.rowsSIMD[3] = _mm_mul_ps(toReturn.rowsSIMD[3], mult);
+
+        return toReturn;
     }
 
     Matrix4 Matrix4::operator / (const float num)
     {
-        return Matrix4(xx / num, xy / num, xz / num, xw / num,
-                       yx / num, yy / num, yz / num, yw / num,
-                       zx / num, zy / num, zz / num, zw / num,
-                       wx / num, wy / num, wz / num, 1.0f);
+        Matrix4 toReturn = Matrix4(*this);
+        __m128 div = _mm_set1_ps(num);
+
+        toReturn.rowsSIMD[0] = _mm_div_ps(toReturn.rowsSIMD[0], div);
+        toReturn.rowsSIMD[1] = _mm_div_ps(toReturn.rowsSIMD[1], div);
+        toReturn.rowsSIMD[2] = _mm_div_ps(toReturn.rowsSIMD[2], div);
+        toReturn.rowsSIMD[3] = _mm_div_ps(toReturn.rowsSIMD[3], div);
+
+        return toReturn;
     }
 
     Matrix4 Matrix4::operator += (const Matrix4& mat)

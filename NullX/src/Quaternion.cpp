@@ -8,48 +8,41 @@
 
 namespace NullX
 {
-    Quaternion::Quaternion() : w(1.0f), x(0.0f), y(0.0f), z(0.0f)
+    Quaternion::Quaternion() : elementsSIMD(_mm_setr_ps(1.0f, 0.0f, 0.0f, 0.0f))
     {
     }
 
-    Quaternion::Quaternion(const Quaternion& quat) : w(quat.w), x(quat.x), y(quat.y), z(quat.z)
+    Quaternion::Quaternion(const Quaternion& quat) : elementsSIMD(_mm_setr_ps(quat.w, quat.x, quat.y, quat.z))
     {
     }
 
-    Quaternion::Quaternion(const float _x, const float _y, const float _z, const float angle) : w(cosf(angle / 2)), x(_x * sinf((angle / 2))), y(_y * sinf(angle / 2)), z(_z * sinf(angle / 2))
+    Quaternion::Quaternion(const Vector3& vec, const float angle) : elementsSIMD(_mm_setr_ps(cosf(angle / 2), vec.x * sinf((angle / 2)), vec.y * sinf(angle / 2), vec.z * sinf(angle / 2)))
     {
-    }
-
-    Quaternion::Quaternion(const Vector3& vec, const float angle) : w(cosf(angle / 2)), x(vec.x * sinf(angle / 2)), y(vec.y * sinf(angle / 2)), z(vec.z * sinf(angle / 2))
-    {
-    }
-
-    Quaternion::Quaternion(const Vector4& vec, const float angle) : w(cosf(angle / 2)), x(vec.x * sinf(angle / 2)), y(vec.y * sinf(angle / 2)), z(vec.z * sinf(angle / 2))
-    {
+        Vector3 vecNorm = Vector3::Normalized(vec);
+        float sinAng = sinf(angle / 2);
+        elementsSIMD = _mm_setr_ps(1, vecNorm.x, vecNorm.y, vecNorm.z);
+        elementsSIMD = _mm_mul_ps(elementsSIMD, _mm_setr_ps(cosf(angle / 2), sinAng, sinAng, sinAng));
     }
 
     void Quaternion::Normalize()
     {
-        float mag = Magnitude(*this);
-        w /= mag;
-        x /= mag;
-        y /= mag;
-        z /= mag;
+        __m128 magVec = _mm_set1_ps(Magnitude(*this));
+        elementsSIMD = _mm_div_ps(elementsSIMD, magVec);
     }
 
     float Quaternion::Magnitude(const Quaternion& quat)
     {
-        return sqrtf(MagnitudeSqr(quat));
+        return sqrtf(Dot(quat, quat));
     }
 
     float Quaternion::MagnitudeSqr(const Quaternion& quat)
     {
-        return (quat.w * quat.w) + (quat.x * quat.x) + (quat.y * quat.y) + (quat.z * quat.z);
+        return Dot(quat, quat);
     }
 
     float Quaternion::Dot(const Quaternion& quat1, const Quaternion& quat2)
     {
-        return (quat1.w * quat2.w) + (quat1.x * quat2.x) + (quat1.y * quat2.y) + (quat1.z * quat2.z);
+        return  _mm_dp_ps(quat1.elementsSIMD, quat2.elementsSIMD, 0xF1).m128_f32[0];
     }
 
     Quaternion Quaternion::Normalized(const Quaternion& quat)
@@ -62,9 +55,8 @@ namespace NullX
     Quaternion Quaternion::Conjugate(const Quaternion& quat)
     {
         Quaternion toReturn = Quaternion(quat);
-        toReturn.x *= -1;
-        toReturn.y *= -1;
-        toReturn.z *= -1;
+        __m128 neg = _mm_setr_ps(1, -1, -1, -1);
+        toReturn.elementsSIMD = _mm_mul_ps(toReturn.elementsSIMD, neg);
         return toReturn;
     }
 
@@ -75,78 +67,67 @@ namespace NullX
 
     Vector3 Quaternion::ToEuler(const Quaternion& quat)
     {
+        // Shout out to euclideanspace.com for the formulas
         Vector3 toReturn = Vector3();
-        float xSqr = quat.x * quat.x;
-        float ySqr = quat.y * quat.y;
-        float zSqr = quat.z * quat.z;
+        float* elementsSqr = _mm_mul_ps(quat.elementsSIMD, quat.elementsSIMD).m128_f32;
+        float xSqr = elementsSqr[1];
+        float ySqr = elementsSqr[2];
+        float zSqr = elementsSqr[3];
 
-        toReturn.x = atan2f(2 * (quat.w * quat.x + quat.y * quat.z), 1 - (2 * (xSqr + ySqr)));
-        toReturn.y = asinf(2 * (quat.w * quat.y - quat.z * quat.x));
-        toReturn.z = atan2f(2 * (quat.w * quat.z + quat.x * quat.y), 1 - (2 * (ySqr + zSqr)));
-       
+
+        toReturn.x = atan2f(2 * (quat.x * quat.w - quat.y * quat.z), 1 - (2 * (xSqr + ySqr)));
+        toReturn.y = asinf(2 * (quat.w * quat.y + quat.x * quat.z));
+        toReturn.z = atan2f(2 * (quat.w * quat.z - quat.x * quat.y), 1 - (2 * (ySqr + zSqr)));
+        
         return toReturn;
     }
 
     Quaternion Quaternion::operator * (const Quaternion& quat)
     {
         Quaternion toReturn = Quaternion();
-        toReturn.w = (w * quat.w) - (x * quat.x) - (y * quat.y) - (z * quat.z);
-        toReturn.x = (w * quat.x) + (x * quat.w) + (y * quat.z) - (z * quat.y);
-        toReturn.y = (w * quat.y) - (x * quat.z) + (y * quat.w) + (z * quat.x);
-        toReturn.z = (w * quat.z) + (x * quat.y) - (y * quat.x) + (z * quat.w);
-        
+        __m128 mask1 = _mm_mul_ps(_mm_set1_ps(w), _mm_setr_ps(quat.w, quat.x, quat.y, quat.z));
+        __m128 mask2 = _mm_mul_ps(_mm_set1_ps(x), _mm_setr_ps(-quat.x, quat.w, -quat.z, quat.y));
+        __m128 mask3 = _mm_mul_ps(_mm_set1_ps(y), _mm_setr_ps(-quat.y, quat.z, quat.w, -quat.x));
+        __m128 mask4 = _mm_mul_ps(_mm_set1_ps(z), _mm_setr_ps(-quat.z, -quat.y, quat.x, quat.w));
+
+        /* toReturn.w = (w * quat.w) - (x * quat.x) - (y * quat.y) - (z * quat.z);
+           toReturn.x = (w * quat.x) + (x * quat.w) + (y * quat.z) - (z * quat.y);
+           toReturn.y = (w * quat.y) - (x * quat.z) + (y * quat.w) + (z * quat.x);
+           toReturn.z = (w * quat.z) + (x * quat.y) - (y * quat.x) + (z * quat.w); */
+        toReturn.elementsSIMD = _mm_add_ps(_mm_add_ps(mask1, mask2), _mm_add_ps(mask3, mask4));
+
         return toReturn;
     }
 
     Quaternion Quaternion::operator * (const float num)
     {
         Quaternion toReturn = Quaternion(*this);
-        toReturn.w *= num;
-        toReturn.x *= num;
-        toReturn.y *= num;
-        toReturn.z *= num;
-
+        toReturn.elementsSIMD = _mm_mul_ps(elementsSIMD, _mm_set1_ps(num));
         return toReturn;
     }
 
     Quaternion Quaternion::operator / (const float num)
     {
         Quaternion toReturn = Quaternion(*this);
-        toReturn.w /= num;
-        toReturn.x /= num;
-        toReturn.y /= num;
-        toReturn.z /= num;
-
+        toReturn.elementsSIMD = _mm_div_ps(elementsSIMD, _mm_set1_ps(num));
         return toReturn;
     }
 
     Quaternion Quaternion::operator *= (const Quaternion& quat)
     {
-        w = (w * quat.w) - (x * quat.x) - (y * quat.y) - (z * quat.z);
-        x = (w * quat.x) + (x * quat.w) + (y * quat.z) - (z * quat.y);
-        y = (w * quat.y) - (x * quat.z) + (y * quat.w) + (z * quat.x);
-        z = (w * quat.z) + (x * quat.y) - (y * quat.x) + (z * quat.w);
-
+        *this = *this * quat;
         return *this;
     }
 
     Quaternion Quaternion::operator *= (const float num)
     {
-        w *= num;
-        x *= num;
-        y *= num;
-        z *= num;
-
+        *this = *this * num;
         return *this;
     }
 
     Quaternion Quaternion::operator /= (const float num)
     {
-        w /= num;
-        x /= num;
-        y /= num;
-        z /= num;
-
+        *this = *this / num;
         return *this;
     }
 }
