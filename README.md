@@ -16,13 +16,11 @@ potency of the library.
 - Doxygen documentation in NullX header
 
 ## Phase 3 - SIMD Vectors
+### Completed 6/22/16
 - Implement intrinsics for Vector2, Vector3 & Vector4 classes
 - Fully test newly implemented functionality
 
 ## Phase 4 - SIMD Matrices & Quaternions
+### Completed 6/28/16
 - Implement intrinsics for Matrix4x4 and Quaternion classes
 - Fully test newly implemented functionality
-
-## Phase 5 - Final Documentation & Wrap-up
-- Finalize all documentation
-- Begin planning next phases of improvement
